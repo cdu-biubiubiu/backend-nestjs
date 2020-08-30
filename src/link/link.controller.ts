@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common"
 import { LinkService } from "./link.service";
 import { CreateLinkDto } from "./dto/create-link.dto";
 import { ModifyLinkDto } from "./dto/modify-link.dto";
-import { ApiForbiddenResponse,  ApiTags } from "@nestjs/swagger";
+import { ApiForbiddenResponse, ApiTags } from "@nestjs/swagger";
 
 @ApiTags("link")
 @Controller("link")
