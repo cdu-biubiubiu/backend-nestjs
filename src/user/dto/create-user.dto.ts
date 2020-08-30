@@ -7,7 +7,6 @@ export enum Score {
 }
 export class CreateUserDto {
   @ApiProperty({
-    required: true,
     minimum: 6,
     maximum: 16,
   })
@@ -15,8 +14,6 @@ export class CreateUserDto {
   @ApiProperty({
     minimum: 6,
     maximum: 16,
-
-    required: true,
   })
   password: string;
   @ApiProperty({

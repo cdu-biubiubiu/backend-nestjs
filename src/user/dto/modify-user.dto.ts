@@ -1,13 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Score } from "./create-user.dto";
+import { PartialType } from "@nestjs/swagger";
+import { CreateUserDto } from "./create-user.dto";
 
-export class ModifyUserDto {
-  @ApiProperty({})
-  username: string;
-  @ApiProperty()
-  password: string;
-  @ApiProperty({
-    enum: Score,
-  })
-  score: string;
-}
+export class ModifyUserDto extends PartialType(CreateUserDto) {}

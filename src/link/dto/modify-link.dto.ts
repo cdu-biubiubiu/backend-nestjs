@@ -1,8 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { PartialType } from "@nestjs/swagger";
+import { CreateLinkDto } from "./create-link.dto";
 
-export class ModifyLinkDto {
-  @ApiProperty()
-  name: string;
-  @ApiProperty()
-  src: string;
-}
+export class ModifyLinkDto extends PartialType(CreateLinkDto) {}
