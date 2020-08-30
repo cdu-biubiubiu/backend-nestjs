@@ -1,12 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsFQDN, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateLinkDto {
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty({
-    default: "Apple",
+    example: "apple",
   })
   name: string;
+  @IsFQDN()
+  @IsNotEmpty()
   @ApiProperty({
-    default: "https://www.apple.com",
+    example: "http://www.apple.com",
   })
   src: string;
 }

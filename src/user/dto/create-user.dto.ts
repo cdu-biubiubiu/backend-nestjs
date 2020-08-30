@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsAlphanumeric, IsEnum, IsString } from "class-validator";
+import { IsAlphanumeric, IsEnum, Length } from "class-validator";
 
 export enum Score {
   Admin = "admin",
@@ -7,22 +7,18 @@ export enum Score {
   User = "user",
 }
 export class CreateUserDto {
-  @IsString()
+  @IsAlphanumeric()
+  @Length(6, 16)
   @ApiProperty({
-    minimum: 6,
-    maximum: 16,
+    example: "defaultUser",
   })
   username: string;
-  @IsString()
   @IsAlphanumeric()
+  @Length(6, 16)
   @ApiProperty({
-    minimum: 6,
-    maximum: 16,
+    example: "defaultPassword",
   })
   password: string;
   @IsEnum(Score)
-  @ApiProperty({
-    enum: Score,
-  })
-  score: Score;
+  score: Score = Score.User;
 }

@@ -1,8 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreatePostDto {
-  @ApiProperty()
+  @IsString()
+  @ApiProperty({
+    example: "我是标题",
+  })
+  @IsNotEmpty()
   title: string;
-  @ApiProperty()
+  @IsString()
+  @ApiProperty({
+    example: "我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容",
+  })
   content: string;
 }
