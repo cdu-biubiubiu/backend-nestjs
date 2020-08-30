@@ -1,4 +1,4 @@
 export class CreateLinkDto {
-  name: string
-  src: string
+  name: string;
+  src: string;
 }
