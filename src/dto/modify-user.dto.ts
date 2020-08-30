@@ -1,6 +1,5 @@
 export class ModifyUserDto {
-    username: string;
-    password: string;
-    score: string;
-
+  username: string;
+  password: string;
+  score: string;
 }
