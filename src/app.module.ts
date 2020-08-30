@@ -6,6 +6,7 @@ import { PostModule } from "./post/post.module";
 import { TestModule } from "./test/test.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { MongooseConfigService } from "./mongoose-config/mongoose-config.service";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MongooseConfigService } from "./mongoose-config/mongoose-config.service
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,
     }),
+    AuthModule,
   ],
   controllers: [],
   providers: [AppService, MongooseConfigService],

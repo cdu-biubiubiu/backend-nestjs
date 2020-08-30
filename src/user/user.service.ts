@@ -12,6 +12,12 @@ export class UserService {
   async findAll() {
     return this.userModel.find().exec();
   }
+  async findOne(id: string) {
+    return this.userModel.findById(id).exec();
+  }
+  async findOneByUsername(username: string) {
+    return this.userModel.findOne({ username }).exec();
+  }
 
   async createOne(createUserDto: CreateUserDto) {
     const createdUser = new this.userModel(createUserDto);
