@@ -1,24 +1,30 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "../interface/user.interface";
-import { of } from "rxjs";
+import { InjectModel } from "@nestjs/mongoose";
+import { User } from "./user.schema";
+import { Model } from "mongoose";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { ModifyUserDto } from "./dto/modify-user.dto";
 
 @Injectable()
 export class UserService {
-  private readonly users: User[] = [];
-  findAll() {
-    return of(this.users);
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+
+  async findAll() {
+    return this.userModel.find().exec();
   }
-  createOne(user: User) {
-    this.users.push(user);
-    return of(user);
+
+  async createOne(createUserDto: CreateUserDto) {
+    const createdUser = new this.userModel(createUserDto);
+    return createdUser.save();
   }
-  modifyOne(id: string, user: User) {
-    return of({
-      id,
-      user,
-    });
+
+  async modifyOne(id: string, modifyUserDto: ModifyUserDto) {
+    // const modifiedUser = new this.userModel(modifyUserDto)
+
+    return this.userModel.findByIdAndUpdate({ _id: id }, { $set: modifyUserDto }).exec();
   }
-  deleteOneById(id: string) {
-    return of(id);
+
+  async deleteOne(id: string) {
+    return this.userModel.deleteOne({ _id: id });
   }
 }

@@ -8,7 +8,10 @@ async function bootstrap() {
     .setTitle("Biubiubiu Backend Api")
     .setDescription("Biubiubiu 的 nestjs 实现")
     .setVersion("0.0.1")
-    .addTag("api")
+    // .addTag("api")
+    .addTag("link")
+    .addTag('post')
+    .addTag('user')
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup("api", app, document);
