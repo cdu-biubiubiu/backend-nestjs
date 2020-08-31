@@ -15,6 +15,7 @@ async function bootstrap() {
     .setDescription("nestjs 实现")
     .setVersion("0.0.1")
     .addBearerAuth()
+    .addServer("http//")
     .addTag("link")
     .addTag("post")
     .addTag("user")
