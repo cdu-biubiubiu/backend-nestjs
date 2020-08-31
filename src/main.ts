@@ -2,9 +2,14 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+// import * as csurf from "csurf";
+import * as helmet from "helmet";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  // app.use(csurf({ cookie: true }));
+  app.use(helmet());
   const options = new DocumentBuilder()
     .setTitle("Backend Api")
     .setDescription("nestjs 实现")
@@ -19,6 +24,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   const port = process.env.APP_PORT || 3000;
   await app.listen(port);
+  console.log("🤩 App is running!", await app.getUrl());
 }
 
 bootstrap();
