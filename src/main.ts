@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   // app.use(csurf({ cookie: true }));
-  app.use(helmet());
+  // app.use(helmet());
   const options = new DocumentBuilder()
     .setTitle("Backend Api")
     .setDescription("nestjs 实现")
