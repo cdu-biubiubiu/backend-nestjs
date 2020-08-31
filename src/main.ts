@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   // app.use(csurf({ cookie: true }));
-  // app.use(helmet());
+  app.use(helmet());
   const options = new DocumentBuilder()
     .setTitle("Backend Api")
     .setDescription("nestjs 实现")
@@ -25,7 +25,8 @@ async function bootstrap() {
   SwaggerModule.setup("api", app, document);
   app.useGlobalPipes(new ValidationPipe());
   const port = process.env.APP_PORT || 3000;
-  await app.listen(port);
+  const host = "0.0.0.0";
+  await app.listen(port, host);
   console.log("🤩 App is running!", await app.getUrl());
 }
 
