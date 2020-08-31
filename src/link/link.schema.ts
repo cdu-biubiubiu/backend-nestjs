@@ -6,6 +6,6 @@ export class Link extends Document {
   @Prop()
   name: string;
   @Prop()
-  stc: string;
+  src: string;
 }
 export const LinkSchema = SchemaFactory.createForClass(Link);

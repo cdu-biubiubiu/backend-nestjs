@@ -19,7 +19,6 @@ export class LinkService {
   }
 
   async modifyOne(id: string, modifyLinkDto: ModifyLinkDto) {
-    console.log(modifyLinkDto);
     return this.linkModel.findOneAndUpdate({ _id: id }, { $set: modifyLinkDto }).exec();
   }
 

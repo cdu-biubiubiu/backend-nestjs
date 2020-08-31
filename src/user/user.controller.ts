@@ -27,6 +27,7 @@ export class UserController {
   }
   @Post("login")
   @UseGuards(LocalAuthGuard)
+  // @ApiBasicAuth()
   async login(@Body() verifyUserDto: VerifyUserDto) {
     return this.authService.login(verifyUserDto);
   }
