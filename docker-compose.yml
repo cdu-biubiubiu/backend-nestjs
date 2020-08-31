@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  mongodb:
+    build: mongodb
+    image: hanhan9449/biu-mongodb
+    networks:
+      - backend
+  web:
+    build: .
+    image: hanhan9449/biu-backend-nestjs
+    networks:
+      - backend
+    depends_on:
+      - mongodb
+    ports:
+    - 3000:3000
+networks:
+  backend:
