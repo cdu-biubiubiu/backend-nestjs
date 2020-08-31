@@ -5,9 +5,10 @@ import { LinkModule } from "./link/link.module";
 import { PostModule } from "./post/post.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { MongooseConfigService } from "./config/mongoose-config.service";
-import { AuthModule } from "./auth/auth.module";
 import { AppController } from "./app.controller";
 import { ConfigModule } from "@nestjs/config";
+import AppConfig from "./config/app.config";
+import MongodbConfig from "./config/mongodb.config";
 
 @Module({
   imports: [
@@ -17,9 +18,9 @@ import { ConfigModule } from "@nestjs/config";
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,
     }),
-    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [AppConfig, MongodbConfig],
     }),
   ],
   controllers: [AppController],

@@ -9,6 +9,7 @@ async function bootstrap() {
     .setTitle("Backend Api")
     .setDescription("nestjs 实现")
     .setVersion("0.0.1")
+    .addBearerAuth()
     .addTag("link")
     .addTag("post")
     .addTag("user")
@@ -16,7 +17,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup("api", app, document);
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  const port = process.env.APP_PORT || 3000;
+  await app.listen(port);
 }
 
 bootstrap();
