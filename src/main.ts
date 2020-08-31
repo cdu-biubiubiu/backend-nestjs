@@ -19,7 +19,9 @@ async function bootstrap() {
     .addTag("post")
     .addTag("user")
     .build();
-  const document = SwaggerModule.createDocument(app, options);
+  const document = SwaggerModule.createDocument(app, options, {
+    ignoreGlobalPrefix: true,
+  });
   SwaggerModule.setup("api", app, document);
   app.useGlobalPipes(new ValidationPipe());
   const port = process.env.APP_PORT || 3000;
