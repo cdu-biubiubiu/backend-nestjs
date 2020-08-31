@@ -39,6 +39,10 @@ export class UserService {
   }
   async verify(verifyUserDto: VerifyUserDto) {
     const user = await this.userModel.findOne({ username: verifyUserDto.username }).exec();
-    return user && (await verifyPassword(verifyUserDto.password, user.password));
+    if (user && (await verifyPassword(verifyUserDto.password, user.password))) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
   }
 }

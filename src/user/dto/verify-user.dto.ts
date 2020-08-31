@@ -1,24 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsAlphanumeric, IsEnum, Length } from "class-validator";
+import { OmitType } from "@nestjs/swagger";
+import { CreateUserDto } from "./create-user.dto";
 
-export enum Score {
-  Admin = "admin",
-  SuperAdmin = "superAdmin",
-  User = "user",
-}
-export class VerifyUserDto {
-  @IsAlphanumeric()
-  @Length(6, 16)
-  @ApiProperty({
-    example: "defaultUser",
-  })
-  username: string;
-  @IsAlphanumeric()
-  @Length(6, 16)
-  @ApiProperty({
-    example: "defaultPassword",
-  })
+export class VerifyUserDto extends OmitType(CreateUserDto, ["score"] as const) {
   password: string;
-  @IsEnum(Score)
-  score: Score = Score.User;
 }
