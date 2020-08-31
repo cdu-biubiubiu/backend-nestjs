@@ -6,6 +6,8 @@ export class MongooseConfigService implements MongooseOptionsFactory {
   createMongooseOptions(): MongooseModuleOptions {
     return {
       uri: "mongodb://localhost",
+      useFindAndModify: false,
+      useUnifiedTopology: true,
     };
   }
 }

@@ -6,8 +6,8 @@ import { ValidationPipe } from "@nestjs/common";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const options = new DocumentBuilder()
-    .setTitle("Biubiubiu Backend Api")
-    .setDescription("Biubiubiu 的 nestjs 实现")
+    .setTitle("Backend Api")
+    .setDescription("nestjs 实现")
     .setVersion("0.0.1")
     .addTag("link")
     .addTag("post")

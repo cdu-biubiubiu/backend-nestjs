@@ -4,6 +4,8 @@ import { User } from "./user.schema";
 import { Model } from "mongoose";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
+import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
+import { VerifyUserDto } from "./dto/verify-user.dto";
 
 @Injectable()
 export class UserService {
@@ -20,6 +22,7 @@ export class UserService {
   }
 
   async createOne(createUserDto: CreateUserDto) {
+    createUserDto.password = await hashPassword(createUserDto.password);
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
@@ -27,10 +30,15 @@ export class UserService {
   async modifyOne(id: string, modifyUserDto: ModifyUserDto) {
     // const modifiedUser = new this.userModel(modifyUserDto)
 
+    modifyUserDto.password = await hashPassword(modifyUserDto.password);
     return this.userModel.findByIdAndUpdate({ _id: id }, { $set: modifyUserDto }).exec();
   }
 
   async deleteOne(id: string) {
     return this.userModel.deleteOne({ _id: id });
+  }
+  async verify(verifyUserDto: VerifyUserDto) {
+    const user = await this.userModel.findOne({ username: verifyUserDto.username }).exec();
+    return user && (await verifyPassword(verifyUserDto.password, user.password));
   }
 }

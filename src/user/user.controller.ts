@@ -2,7 +2,8 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common"
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
-import { ApiCreatedResponse, ApiForbiddenResponse, ApiTags } from "@nestjs/swagger";
+import { ApiForbiddenResponse, ApiTags } from "@nestjs/swagger";
+import { VerifyUserDto } from "./dto/verify-user.dto";
 
 @ApiTags("user")
 @Controller("user")
@@ -15,7 +16,7 @@ export class UserController {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: "The resource has been successfully created." })
+  // @ApiCreatedResponse({ description: "The resource has been successfully created." })
   @ApiForbiddenResponse({ description: "Forbidden" })
   async createOne(@Body() createUserDto: CreateUserDto) {
     return this.userService.createOne(createUserDto);
@@ -31,5 +32,10 @@ export class UserController {
   @ApiForbiddenResponse({ description: "Forbidden" })
   async deleteOne(@Param("id") id: string) {
     return this.userService.deleteOne(id);
+  }
+
+  @Post("verify")
+  async verifyOne(@Body() verifyUserDto: VerifyUserDto) {
+    return this.userService.verify(verifyUserDto);
   }
 }
