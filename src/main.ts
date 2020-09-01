@@ -8,7 +8,7 @@ import * as compression from "compression";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: console,
+    // logger: console,
     cors: true,
   });
   // app.use(csurf({ cookie: true }));
@@ -19,7 +19,6 @@ async function bootstrap() {
     .setDescription("nestjs 实现")
     .setVersion("0.0.1")
     .addBearerAuth()
-    // .addServer("http//")
     .addTag("link")
     .addTag("post")
     .addTag("user")

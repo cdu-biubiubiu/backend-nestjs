@@ -7,13 +7,15 @@ import { ModifyUserDto } from "./dto/modify-user.dto";
 import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtService } from "@nestjs/jwt";
+import { filterPassword } from "./user.util";
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>, private jwtService: JwtService) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+  async findAll(): Promise<any[]> {
+    const users = await this.userModel.find().exec();
+    return users.map(filterPassword);
   }
 
   async findOne(id: string): Promise<User> {
