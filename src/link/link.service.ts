@@ -20,7 +20,6 @@ export class LinkService {
 
   async modifyOne(id: string, modifyLinkDto: ModifyLinkDto) {
     let objectId;
-
     try {
       objectId = new mongo.ObjectID(id);
     } catch (e) {
@@ -34,7 +33,7 @@ export class LinkService {
     try {
       objectId = new mongo.ObjectId(id);
     } catch (e) {
-      throw new BadRequestException("修改失败,请检查你的id是否有错");
+      throw new BadRequestException("删除失败,请检查你的id是否有错");
     }
     return this.linkModel.findOneAndDelete({ _id: objectId }).exec();
   }

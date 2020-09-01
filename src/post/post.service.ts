@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Post } from "./post.schema";
-import { Model } from "mongoose";
+import { Model, mongo } from "mongoose";
 import { ModifyPostDto } from "./dto/modify-post.dto";
 import { CreatePostDto } from "./dto/create-post.dto";
 
@@ -14,19 +14,43 @@ export class PostService {
   }
 
   async findOne(id: string) {
-    return this.postModel.findById({ _id: id }).exec();
+    let objectId;
+    try {
+      objectId = new mongo.ObjectId(id);
+    } catch {
+      throw new BadRequestException("你的id有误");
+    }
+    return this.postModel.findById({ _id: objectId }).exec();
   }
 
   async createOne(createPostDto: CreatePostDto) {
+    createPostDto.creationDate = new Date();
+    createPostDto.modifiedDate = new Date();
     const createdPost = new this.postModel(createPostDto);
     return createdPost.save();
   }
 
   async modifyOne(id: string, modifyPostDto: ModifyPostDto) {
-    return this.postModel.findByIdAndUpdate({ _id: id }, { $set: modifyPostDto }).exec();
+    let objectId;
+    try {
+      Logger.debug(id);
+      objectId = new mongo.ObjectId(id);
+    } catch (e) {
+      Logger.debug(e);
+      Logger.debug("arrive");
+      throw new BadRequestException("你的id有误");
+    }
+    modifyPostDto.modifiedDate = new Date();
+    return this.postModel.findByIdAndUpdate({ _id: objectId }, { $set: modifyPostDto }).exec();
   }
 
   async deleteOne(id: string) {
-    return this.postModel.deleteOne({ _id: id }).exec();
+    let objectId;
+    try {
+      objectId = new mongo.ObjectId(id);
+    } catch (e) {
+      throw new BadRequestException("你的id有误");
+    }
+    return this.postModel.deleteOne({ _id: objectId }).exec();
   }
 }

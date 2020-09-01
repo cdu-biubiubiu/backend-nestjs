@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
-import { Model } from "mongoose";
+import { Model, mongo, Types } from "mongoose";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
@@ -37,29 +37,27 @@ export class UserService {
   }
 
   async modifyOne(id: string, modifyUserDto: ModifyUserDto): Promise<User> {
-    if (!(await this.findOne(id))) {
+    let objectId;
+    try {
+      objectId = new mongo.ObjectId(id);
+    } catch (e) {
+      throw new BadRequestException("修改失败,请检查你的id是否有误");
+    }
+    if (!(await this.findOne(objectId))) {
       throw new BadRequestException("用户不存在");
     }
-    if (modifyUserDto.password) {
-      modifyUserDto.password = await hashPassword(modifyUserDto.password);
-    }
-    return this.userModel.updateOne({ _id: id }, { $set: modifyUserDto }).exec();
+    modifyUserDto.password = await hashPassword(modifyUserDto.password);
+    return this.userModel.updateOne({ _id: objectId }, { $set: modifyUserDto }).exec();
   }
 
   async deleteOne(id: string) {
-    const flag = await this.userModel.deleteOne({ _id: id }).exec();
-    if (flag) {
-      return {
-        flag: "ok",
-      };
-    } else {
-      throw new BadRequestException("用户不存在");
+    let objectId;
+    try {
+      objectId = new mongo.ObjectId(id);
+    } catch {
+      throw new BadRequestException("请检查你的id是否有误");
     }
-  }
-
-  async findRoleByUsername(username: string): Promise<Role> {
-    const { role } = await this.userModel.findOne({ username }).exec();
-    return role as Role;
+    return this.userModel.deleteOne({ _id: objectId }).exec();
   }
 
   async validate(user: VerifyUserDto) {
@@ -70,6 +68,7 @@ export class UserService {
     }
     if (foundUser && (await verifyPassword(user.password, foundUser.password))) {
       const { password, ...result } = foundUser;
+      Logger.debug(result);
       return result;
     } else {
       throw new UnauthorizedException("账户或用户名错误");
@@ -88,6 +87,9 @@ export class UserService {
     return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
   }
   async registry(user: RegistryUserDto) {
+    if (await this.findOneByUsername(user.username)) {
+      throw new BadRequestException("用户已存在");
+    }
     user.role = Role.User;
     user.password = await hashPassword(user.password);
     const createdUser = new this.userModel(user);
