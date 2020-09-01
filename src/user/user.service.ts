@@ -27,16 +27,22 @@ export class UserService {
   }
 
   async createOne(createUserDto: CreateUserDto): Promise<User> {
+    if (await this.findOneByUsername(createUserDto.username)) {
+      throw new BadRequestException("用户已经存在");
+    }
     createUserDto.password = await hashPassword(createUserDto.password);
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
 
   async modifyOne(id: string, modifyUserDto: ModifyUserDto): Promise<User> {
+    if (!(await this.findOne(id))) {
+      throw new BadRequestException("用户不存在");
+    }
     if (modifyUserDto.password) {
       modifyUserDto.password = await hashPassword(modifyUserDto.password);
     }
-    return this.userModel.findByIdAndUpdate({ _id: id }, { $set: modifyUserDto }).exec();
+    return this.userModel.updateOne({ _id: id }, { $set: modifyUserDto }).exec();
   }
 
   async deleteOne(id: string) {
