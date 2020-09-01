@@ -1,15 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
-import { CreateUserDto, Score } from "./dto/create-user.dto";
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
-import {
-  ApiBasicAuth,
-  ApiBearerAuth,
-  ApiBody,
-  ApiForbiddenResponse,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiForbiddenResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtAuthGuard } from "./auth/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/local-auth.guard";
@@ -30,7 +23,7 @@ export class UserController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Score.SuperAdmin)
+  @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse()
   async createOne(@Body() createUserDto: CreateUserDto) {
@@ -41,19 +34,14 @@ export class UserController {
   @ApiBody({
     type: VerifyUserDto,
   })
-  @ApiBasicAuth()
   @ApiTags("login")
   async login(@Request() req) {
-    return this.userService.login({
-      username: req.user._doc.username,
-      score: req.user._doc.score as Score,
-      _id: req.user._doc._id,
-    });
+    return this.userService.login(req.user._doc);
   }
 
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Score.SuperAdmin)
+  @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse()
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
@@ -62,7 +50,7 @@ export class UserController {
 
   @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Score.SuperAdmin)
+  @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse()
   async deleteOne(@Param("id") id: string) {

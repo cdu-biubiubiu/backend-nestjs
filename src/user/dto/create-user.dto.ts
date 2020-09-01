@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsAlphanumeric, IsEnum, Length } from "class-validator";
 
-export enum Score {
+export enum Role {
   Admin = "admin",
   SuperAdmin = "superAdmin",
   User = "user",
@@ -19,6 +19,6 @@ export class CreateUserDto {
     example: "defaultPassword",
   })
   password: string;
-  @IsEnum(Score)
-  score: Score = Score.User;
+  @IsEnum(Role)
+  role: Role = Role.User;
 }

@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger
 import { ModifyPostDto } from "./dto/modify-post.dto";
 import { JwtAuthGuard } from "../user/auth/jwt-auth.guard";
 import { RolesGuard } from "../roles.guard";
-import { Score } from "../user/dto/create-user.dto";
+import { Role } from "../user/dto/create-user.dto";
 import { Roles } from "../roles.decorator";
 
 @ApiTags("post")
@@ -37,7 +37,7 @@ export class PostController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Score.SuperAdmin, Score.Admin)
+  @Roles(Role.SuperAdmin, Role.Admin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async createOne(@Body() createPostDto: CreatePostDto) {
@@ -47,7 +47,7 @@ export class PostController {
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(Score.SuperAdmin, Score.Admin)
+  @Roles(Role.SuperAdmin, Role.Admin)
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async modifyOne(@Param("id") id: string, @Body() modifyPostDto: ModifyPostDto) {
     return this.postService.modifyOne(id, modifyPostDto);
@@ -56,7 +56,7 @@ export class PostController {
   @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(Score.SuperAdmin, Score.Admin)
+  @Roles(Role.SuperAdmin, Role.Admin)
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async deleteOne(@Param("id") id: string) {
     return this.postService.deleteOne(id);

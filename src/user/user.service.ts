@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
 import { Model } from "mongoose";
-import { CreateUserDto, Score } from "./dto/create-user.dto";
+import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
 import { VerifyUserDto } from "./dto/verify-user.dto";
@@ -43,9 +43,9 @@ export class UserService {
     return this.userModel.deleteOne({ _id: id }).exec();
   }
 
-  async findScoreByUsername(username: string): Promise<Score> {
-    const { score } = await this.userModel.findOne({ username }).exec();
-    return score as Score;
+  async findRoleByUsername(username: string): Promise<Role> {
+    const { role } = await this.userModel.findOne({ username }).exec();
+    return role as Role;
   }
 
   async validate(user: VerifyUserDto) {
@@ -62,14 +62,15 @@ export class UserService {
     }
   }
 
-  async login(user: { username: string; score: Score; _id: string }) {
+  async login(user: { username: string; role: Role; _id: string }) {
     return {
       username: user.username,
-      access_token: this.jwtService.sign({ username: user.username, score: user.score, _id: user._id }),
+      access_token: this.jwtService.sign({ username: user.username, role: user.role, _id: user._id }),
     };
   }
 
   async modifyPassword(id: string, password: string) {
+    password = await hashPassword(password);
     return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
   }
 }

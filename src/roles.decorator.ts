@@ -1,4 +1,4 @@
 import { SetMetadata } from "@nestjs/common";
-import { Score } from "./user/dto/create-user.dto";
+import { Role } from "./user/dto/create-user.dto";
 
-export const Roles = (...roles: Score[]) => SetMetadata("roles", roles);
+export const Roles = (...roles: Role[]) => SetMetadata("roles", roles);
