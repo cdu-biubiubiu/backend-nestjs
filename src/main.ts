@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
 // import * as csurf from "csurf";
 import * as helmet from "helmet";
+import * as compression from "compression";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,7 @@ async function bootstrap() {
   });
   // app.use(csurf({ cookie: true }));
   // app.use(helmet());
+  app.use(compression());
   const options = new DocumentBuilder()
     .setTitle("Backend Api")
     .setDescription("nestjs 实现")
