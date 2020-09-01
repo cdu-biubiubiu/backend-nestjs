@@ -2,21 +2,19 @@ import { Injectable } from "@nestjs/common";
 import { MongooseModuleOptions, MongooseOptionsFactory } from "@nestjs/mongoose";
 import { ConfigService } from "@nestjs/config";
 
-interface MongoProfile {
-  host: string;
-  user: string | undefined;
-  password: string | undefined;
-  port: string;
+export interface MongoProfile {
+  host?: string;
+  user?: string;
+  password?: string;
+  port?: string | number;
 }
-const getUri = (p: MongoProfile) => {
+export const getUri = (p: MongoProfile) => {
   let result = "mongodb://";
-  if (p.password && p.user && p.password !== "" && p.user !== "") {
-    result += `${p.user}:${p.password}@`;
-  }
-  result += p.host;
-  if (p.port && p.port !== "") {
-    result += `:${p.port}`;
-  }
+  result += p.user ? `${p.user}` : "";
+  result += p.password ? `:${p.password}` : "";
+  result += p.user ? "@" : "";
+  result += p.host || "localhost";
+  result += p.port ? `:${p.port}` : "";
   return result;
 };
 @Injectable()
