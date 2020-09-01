@@ -15,6 +15,9 @@ import { CreateLinkDto } from "./dto/create-link.dto";
 import { ModifyLinkDto } from "./dto/modify-link.dto";
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../user/auth/jwt-auth.guard";
+import { RolesGuard } from "../roles.guard";
+import { Roles } from "../roles.decorator";
+import { Score } from "../user/dto/create-user.dto";
 
 @ApiTags("link")
 @Controller("link")
@@ -28,7 +31,8 @@ export class LinkController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Score.SuperAdmin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async createOne(@Body() createLinkDto: CreateLinkDto) {
@@ -36,15 +40,17 @@ export class LinkController {
   }
 
   @Put(":id")
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Score.SuperAdmin)
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async modifyOne(@Param("id") id: string, @Body() modifyLinkDto: ModifyLinkDto) {
     return this.linkService.modifyOne(id, modifyLinkDto);
   }
 
   @Delete(":id")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Score.SuperAdmin)
   @ApiBearerAuth()
   @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async deleteOne(@Param("id") id: string) {

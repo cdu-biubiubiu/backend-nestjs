@@ -5,13 +5,12 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { User, UserSchema } from "./user.schema";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
-import { AuthService } from "./auth/auth.service";
 import { LocalStrategy } from "./auth/local.strategy";
 import { JwtStrategy } from "./auth/jwt.strategy";
 
 @Module({
   controllers: [UserController],
-  providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
+  providers: [UserService, LocalStrategy, JwtStrategy],
   exports: [UserService],
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
