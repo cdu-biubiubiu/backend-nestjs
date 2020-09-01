@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Link } from "./link.schema";
-import { Model } from "mongoose";
+import { Model, mongo } from "mongoose";
 import { CreateLinkDto } from "./dto/create-link.dto";
 import { ModifyLinkDto } from "./dto/modify-link.dto";
 
@@ -19,10 +19,23 @@ export class LinkService {
   }
 
   async modifyOne(id: string, modifyLinkDto: ModifyLinkDto) {
-    return this.linkModel.findOneAndUpdate({ _id: id }, { $set: modifyLinkDto }).exec();
+    let objectId;
+
+    try {
+      objectId = new mongo.ObjectID(id);
+    } catch (e) {
+      throw new BadRequestException("修改失败,请检查你的id是否有错");
+    }
+    return await this.linkModel.findOneAndUpdate({ _id: objectId }, { $set: modifyLinkDto }).exec();
   }
 
   async deleteOne(id: string) {
-    return this.linkModel.deleteOne({ _id: id });
+    let objectId;
+    try {
+      objectId = new mongo.ObjectId(id);
+    } catch (e) {
+      throw new BadRequestException("修改失败,请检查你的id是否有错");
+    }
+    return this.linkModel.findOneAndDelete({ _id: objectId }).exec();
   }
 }

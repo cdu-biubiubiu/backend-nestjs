@@ -10,6 +10,7 @@ import { RolesGuard } from "../roles.guard";
 import { Roles } from "../roles.decorator";
 import { SelfGuard } from "../self.guard";
 import { ModifyPasswordDto } from "./dto/modify-password.dto";
+import { RegistryUserDto } from "./dto/registry-user.dto";
 
 @ApiTags("user")
 @Controller("user")
@@ -63,5 +64,9 @@ export class UserController {
   @ApiBearerAuth()
   async modifyPassword(@Param("id") id: string, @Body() modifyPasswordDto: ModifyPasswordDto) {
     return this.userService.modifyPassword(id, modifyPasswordDto.password);
+  }
+  @Post("registry")
+  async registry(@Body() registryUserDto: RegistryUserDto) {
+    return this.userService.registry(registryUserDto);
   }
 }

@@ -10,13 +10,13 @@ export class CreateUserDto {
   @IsAlphanumeric()
   @Length(6, 16)
   @ApiProperty({
-    example: "defaultUser",
+    example: "hanhanhan",
   })
   username: string;
   @IsAlphanumeric()
   @Length(6, 16)
   @ApiProperty({
-    example: "defaultPassword",
+    example: "hanhanhan",
   })
   password: string;
   @IsEnum(Role)

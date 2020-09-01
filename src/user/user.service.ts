@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { filterPassword } from "./user.util";
+import { RegistryUserDto } from "./dto/registry-user.dto";
 
 @Injectable()
 export class UserService {
@@ -46,7 +47,14 @@ export class UserService {
   }
 
   async deleteOne(id: string) {
-    return this.userModel.deleteOne({ _id: id }).exec();
+    const flag = await this.userModel.deleteOne({ _id: id }).exec();
+    if (flag) {
+      return {
+        flag: "ok",
+      };
+    } else {
+      throw new BadRequestException("用户不存在");
+    }
   }
 
   async findRoleByUsername(username: string): Promise<Role> {
@@ -58,13 +66,13 @@ export class UserService {
     let foundUser: User;
     foundUser = await this.findOneByUsername(user.username);
     if (!foundUser) {
-      throw new BadRequestException();
+      throw new BadRequestException("用户不存在");
     }
     if (foundUser && (await verifyPassword(user.password, foundUser.password))) {
       const { password, ...result } = foundUser;
       return result;
     } else {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("账户或用户名错误");
     }
   }
 
@@ -78,5 +86,11 @@ export class UserService {
   async modifyPassword(id: string, password: string) {
     password = await hashPassword(password);
     return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
+  }
+  async registry(user: RegistryUserDto) {
+    user.role = Role.User;
+    user.password = await hashPassword(user.password);
+    const createdUser = new this.userModel(user);
+    return createdUser.save();
   }
 }
