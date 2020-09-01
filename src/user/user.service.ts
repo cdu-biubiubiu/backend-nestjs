@@ -15,9 +15,11 @@ export class UserService {
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
+
   async findOne(id: string): Promise<User> {
     return this.userModel.findById(id).exec();
   }
+
   async findOneByUsername(username: string): Promise<User> {
     return this.userModel.findOne({ username }).exec();
   }
@@ -29,17 +31,21 @@ export class UserService {
   }
 
   async modifyOne(id: string, modifyUserDto: ModifyUserDto): Promise<User> {
-    modifyUserDto.password = await hashPassword(modifyUserDto.password);
+    if (modifyUserDto.password) {
+      modifyUserDto.password = await hashPassword(modifyUserDto.password);
+    }
     return this.userModel.findByIdAndUpdate({ _id: id }, { $set: modifyUserDto }).exec();
   }
 
   async deleteOne(id: string) {
     return this.userModel.deleteOne({ _id: id }).exec();
   }
+
   async findScoreByUsername(username: string): Promise<Score> {
     const { score } = await this.userModel.findOne({ username }).exec();
     return score as Score;
   }
+
   async validate(user: VerifyUserDto) {
     let foundUser: User;
     foundUser = await this.findOneByUsername(user.username);
@@ -53,10 +59,15 @@ export class UserService {
       throw new UnauthorizedException();
     }
   }
-  async login(user: { username: string; score: Score }) {
+
+  async login(user: { username: string; score: Score; _id: string }) {
     return {
       username: user.username,
-      access_token: this.jwtService.sign({ username: user.username, score: user.score }),
+      access_token: this.jwtService.sign({ username: user.username, score: user.score, _id: user._id }),
     };
+  }
+
+  async modifyPassword(id: string, password: string) {
+    return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
   }
 }

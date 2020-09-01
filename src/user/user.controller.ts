@@ -1,13 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { CreateUserDto, Score } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
-import { ApiBearerAuth, ApiBody, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import {
+  ApiBasicAuth,
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiProperty,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtAuthGuard } from "./auth/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/local-auth.guard";
 import { RolesGuard } from "../roles.guard";
 import { Roles } from "../roles.decorator";
+import { SelfGuard } from "../self.guard";
+import { ModifyPasswordDto } from "./dto/modify-password.dto";
 
 @ApiTags("user")
 @Controller("user")
@@ -23,7 +33,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Score.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
+  @ApiUnauthorizedResponse()
   async createOne(@Body() createUserDto: CreateUserDto) {
     return this.userService.createOne(createUserDto);
   }
@@ -32,17 +42,21 @@ export class UserController {
   @ApiBody({
     type: VerifyUserDto,
   })
-  // @ApiBasicAuth()
+  @ApiBasicAuth()
   @ApiTags("login")
   async login(@Request() req) {
-    return this.userService.login({ username: req.user._doc.username, score: req.user._doc.score as Score });
+    return this.userService.login({
+      username: req.user._doc.username,
+      score: req.user._doc.score as Score,
+      _id: req.user._doc._id,
+    });
   }
 
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Score.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
+  @ApiUnauthorizedResponse()
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
     return this.userService.modifyOne(id, modifyUserDto);
   }
@@ -51,8 +65,16 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Score.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
+  @ApiUnauthorizedResponse()
   async deleteOne(@Param("id") id: string) {
     return this.userService.deleteOne(id);
+  }
+  @Put(":id/password")
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse({})
+  @ApiBearerAuth()
+  async modifyPassword(@Param("id") id: string, @Body() modifyPasswordDto: ModifyPasswordDto) {
+    return this.userService.modifyPassword(id, modifyPasswordDto.password);
   }
 }
