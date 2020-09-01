@@ -4,9 +4,9 @@ import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { VerifyUserDto } from "./dto/verify-user.dto";
-import { JwtAuthGuard } from "./jwt-auth.guard";
-import { LocalAuthGuard } from "./local-auth.guard";
-import { AuthService } from "./auth.service";
+import { JwtAuthGuard } from "./auth/jwt-auth.guard";
+import { LocalAuthGuard } from "./auth/local-auth.guard";
+import { AuthService } from "./auth/auth.service";
 
 @ApiTags("user")
 @Controller("user")
@@ -28,6 +28,7 @@ export class UserController {
   @Post("login")
   @UseGuards(LocalAuthGuard)
   // @ApiBasicAuth()
+  @ApiTags("login")
   async login(@Body() verifyUserDto: VerifyUserDto) {
     return this.authService.login(verifyUserDto);
   }

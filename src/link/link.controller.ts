@@ -14,7 +14,7 @@ import { LinkService } from "./link.service";
 import { CreateLinkDto } from "./dto/create-link.dto";
 import { ModifyLinkDto } from "./dto/modify-link.dto";
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../user/jwt-auth.guard";
+import { JwtAuthGuard } from "../user/auth/jwt-auth.guard";
 
 @ApiTags("link")
 @Controller("link")

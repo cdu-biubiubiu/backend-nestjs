@@ -34,4 +34,8 @@ export class UserService {
   async deleteOne(id: string) {
     return this.userModel.deleteOne({ _id: id });
   }
+  async findScoreByUsername(username: string) {
+    const { score } = await this.userModel.findOne({ username }).exec();
+    return score;
+  }
 }
