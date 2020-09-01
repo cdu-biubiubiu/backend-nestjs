@@ -9,6 +9,7 @@ export class CreatePostDto {
   @IsNotEmpty()
   title: string;
   @IsString()
+  @IsNotEmpty()
   @ApiProperty({
     example: "我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容",
   })

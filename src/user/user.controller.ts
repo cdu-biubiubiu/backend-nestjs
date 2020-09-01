@@ -2,7 +2,14 @@ import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Request, UseGu
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
-import { ApiBearerAuth, ApiBody, ApiForbiddenResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtAuthGuard } from "./auth/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/local-auth.guard";
@@ -26,7 +33,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse()
+  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async createOne(@Body() createUserDto: CreateUserDto) {
     return this.userService.createOne(createUserDto);
   }
@@ -44,7 +51,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse()
+  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
+  @ApiBadRequestResponse({ description: "修改失败,请检查你的id是否有错" })
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
     return this.userService.modifyOne(id, modifyUserDto);
   }
@@ -53,19 +61,21 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse()
+  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
+  @ApiBadRequestResponse({ description: "删除失败,请检查你的id是否有错" })
   async deleteOne(@Param("id") id: string) {
     return this.userService.deleteOne(id);
   }
   @Put(":id/password")
   @UseGuards(JwtAuthGuard, SelfGuard)
-  @ApiUnauthorizedResponse()
   @ApiForbiddenResponse({})
   @ApiBearerAuth()
+  @ApiUnauthorizedResponse({ description: "你没有权限进行该操作!" })
   async modifyPassword(@Param("id") id: string, @Body() modifyPasswordDto: ModifyPasswordDto) {
     return this.userService.modifyPassword(id, modifyPasswordDto.password);
   }
   @Post("registry")
+  @ApiTags("registry")
   async registry(@Body() registryUserDto: RegistryUserDto) {
     return this.userService.registry(registryUserDto);
   }

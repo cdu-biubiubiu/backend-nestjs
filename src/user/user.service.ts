@@ -91,6 +91,7 @@ export class UserService {
     user.role = Role.User;
     user.password = await hashPassword(user.password);
     const createdUser = new this.userModel(user);
-    return createdUser.save();
+    const c = await createdUser.save();
+    return filterPassword(c);
   }
 }
