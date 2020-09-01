@@ -8,6 +8,7 @@
 - 使用 typescript 作为编码语言
 - 使用 Nest.js 封装的 mongoose 提供 ODM 服务
 - 使用 Nest.js 封装的 swagger 提供接口信息
+- 使用 jwt 验证用户身份
 - 使用 docker, docker-compose 提供容器化服务
 
 
@@ -25,8 +26,22 @@
 ```bash
 docker run --rm -d -p 27017:27017 hanhan9449/biu-mongodb
 ```
-### 本地开发 || 使用
+### 本地开发 or 使用
 
 首先,你需要将数据库模拟数据导入 mongodb 中,然后启动项目即可.
 
 ps. 相关导入脚本在 `./mongodb` 路径
+
+ps. 你可能需要修改部分参数,例如数据库账号密码等,你可以这样做:
+
+在你的目录创建一个名为`.env`的文件
+```dotenv
+MONGO_HOST=localhost
+#MONGO_USER=
+#MONGO_PASSWORD=
+#MONGO_PORT=27017
+#MONGO_DATABASE=
+
+#JWT_SECRET=
+
+```
