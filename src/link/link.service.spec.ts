@@ -90,7 +90,7 @@ describe("LinkService", () => {
       const count = await linkModel.countDocuments().exec();
       expect(count).toBe(N);
     });
-    it("should throw a BadRequestException when modify a link", async () => {
+    it("should throw a BadRequestException 400", async () => {
       const badId = "12345";
       const modifyLinkDto: ModifyLinkDto = { name: "modify", src: "www.modify.com" };
       await expect(service.modifyOne(badId, modifyLinkDto)).rejects.toThrow(BadRequestException);
@@ -103,7 +103,7 @@ describe("LinkService", () => {
       expect(count).toBe(N - 1);
       expect(deletedLink.toObject()).toEqual(oldLink.toObject());
     });
-    it("should throw a BadRequestException when delete a link", async () => {
+    it("should throw a BadRequestException 400", async () => {
       const badId = "12345";
       await expect(service.deleteOne(badId)).rejects.toThrow(BadRequestException);
     });

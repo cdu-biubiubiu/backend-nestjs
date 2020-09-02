@@ -56,7 +56,7 @@ export class UserController {
         },
       ],
     },
-  })
+  }) // 200
   async findAll() {
     return await this.userService.findAll();
   }
@@ -73,7 +73,7 @@ export class UserController {
         message: "Unauthorized",
       },
     },
-  })
+  }) // 401
   @ApiForbiddenResponse({
     description: "用户已经存在",
     schema: {
@@ -83,7 +83,7 @@ export class UserController {
         error: "Forbidden",
       },
     },
-  })
+  }) // 403
   @ApiCreatedResponse({
     description: "创建成功",
     schema: {
@@ -95,7 +95,7 @@ export class UserController {
         __v: 0,
       },
     },
-  })
+  }) // 201
   @ApiOperation({ summary: "创建一个用户" })
   async createOne(@Body() createUserDto: CreateUserDto) {
     return this.userService.createOne(createUserDto);
@@ -117,7 +117,7 @@ export class UserController {
         error: "Forbidden",
       },
     },
-  })
+  }) // 403
   @ApiUnauthorizedResponse({
     description: "你的账号或密码不正确",
     schema: {
@@ -127,7 +127,7 @@ export class UserController {
         error: "Unauthorized",
       },
     },
-  })
+  }) // 401
   @ApiCreatedResponse({
     description: "登录成功",
     schema: {
@@ -139,7 +139,7 @@ export class UserController {
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhhbmhhbmhhbiIsImlhdCI6MTU5OTAzODA5OCwiZXhwIjoxNTk5MDQxNjk4fQ.NCYdDSVQXatLuHSRPdT2KLJ3BKIQkSd2Zg4k__lOAxY",
       },
     },
-  })
+  }) // 201
   async login(@Request() req) {
     return this.userService.login(req.user);
   }
@@ -219,6 +219,7 @@ export class UserController {
       },
     },
   }) // 200
+  @ApiOperation({ summary: "删除一名用户" })
   @ApiBadRequestResponse({
     description: "修改失败,请检查你的id是否有错",
     schema: {

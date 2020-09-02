@@ -35,7 +35,7 @@ export class UserService {
     }
     const user = await this.userModel.findById(objectId).exec();
     if (!user) {
-      throw new GoneException();
+      throw new NotFoundException();
     }
     return filterPassword(user);
   }
@@ -76,11 +76,11 @@ export class UserService {
       throw new BadRequestException("请检查你的id是否有误");
     }
     const found = await this.userModel.findById(objectId).exec();
-    if (found.role === Role.SuperAdmin) {
-      throw new ForbiddenException("不能删除超级管理员");
-    }
     if (!found) {
       throw new NotFoundException("资源不存在");
+    }
+    if (found.role === Role.SuperAdmin) {
+      throw new ForbiddenException("不能删除超级管理员");
     }
     return await this.userModel.findByIdAndDelete({ _id: objectId }).exec();
   }

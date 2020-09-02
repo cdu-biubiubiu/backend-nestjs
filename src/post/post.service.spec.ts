@@ -11,7 +11,7 @@ import { ModifyLinkDto } from "../link/dto/modify-link.dto";
 import { ModifyPostDto } from "./dto/modify-post.dto";
 
 describe("PostService", () => {
-  let N;
+  let N = 3;
   const badId = "12345";
   let service: PostService;
   let connection: Connection;
@@ -51,9 +51,9 @@ describe("PostService", () => {
       };
       posts.push(post);
     }
-    N = posts.length;
-    await postModel.insertMany(posts);
+    const res = await postModel.insertMany(posts);
     oldPost = (await postModel.find().exec())[0];
+
     oldPostObjectId = new mongo.ObjectID(oldPost._id);
   });
 

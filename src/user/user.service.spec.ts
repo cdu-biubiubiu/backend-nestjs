@@ -6,7 +6,13 @@ import { closeMongeConnection, MockMongodbModule } from "../config/mongodb/mock-
 import { getConnectionToken, MongooseModule } from "@nestjs/mongoose";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { JwtModule } from "@nestjs/jwt";
-import { BadRequestException, GoneException, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  GoneException,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { filterPassword } from "./user.util";
@@ -95,12 +101,12 @@ describe("UserService", () => {
       expect(user.password).not.toBeDefined();
       expect(user.role).toEqual(old.role);
     });
-    it("should throw BadRequestException", async () => {
+    it("should throw 400", async () => {
       await expect(service.findOne(badId)).rejects.toThrow(BadRequestException);
     });
-    it("should throw GoneException", async () => {
+    it("should throw 404", async () => {
       await model.deleteMany({}).exec();
-      await expect(service.findOne(old._id)).rejects.toThrow(GoneException);
+      await expect(service.findOne(old._id)).rejects.toThrow(NotFoundException);
     });
   });
   describe("createOne", () => {
@@ -120,17 +126,20 @@ describe("UserService", () => {
       const found = await model.findById(id);
       expect(found.toObject()).toEqual(user.toObject());
     });
-    it("should throw BadRequestException", async () => {
+    it("should throw 403 ", async () => {
       createUserDto.username = "user";
-      await expect(service.createOne(createUserDto)).rejects.toThrow(BadRequestException);
+      await expect(service.createOne(createUserDto)).rejects.toThrow(ForbiddenException);
     });
   });
   describe("modifyOne", () => {
-    const newUser: ModifyUserDto = {
-      username: "modify",
-      password: "modify",
-      role: Role.Admin,
-    };
+    let newUser: ModifyUserDto;
+    beforeEach(() => {
+      newUser = {
+        username: "modify",
+        password: "modify",
+        role: Role.Admin,
+      };
+    });
     it("should modify a user", async () => {
       const modified = await service.modifyOne(old._id, newUser);
       const found = await model.findById(old._id).exec();
@@ -139,12 +148,16 @@ describe("UserService", () => {
       expect(found.password).toEqual(newUser.password);
       expect(found.role).toEqual(newUser.role);
     });
-    it("should throw BadRequestException when id is bad", async () => {
+    it("should throw 400", async () => {
       await expect(service.modifyOne(badId, newUser)).rejects.toThrow(BadRequestException);
     });
-    it("should throw BadRequestException when user doesn't exist ", async () => {
+    it("should throw 403", async () => {
+      newUser.role = Role.SuperAdmin;
+      await expect(service.modifyOne(old._id, newUser)).rejects.toThrow(ForbiddenException);
+    });
+    it("should throw 404", async () => {
       await model.deleteMany({}).exec();
-      await expect(service.modifyOne(old._id, newUser)).rejects.toThrow(GoneException);
+      await expect(service.modifyOne(old._id, newUser)).rejects.toThrow(NotFoundException);
     });
   });
   describe("deleteOne", () => {
@@ -154,12 +167,16 @@ describe("UserService", () => {
       expect(count).toBe(N - 1);
       expect(deleted.toObject()).toEqual(old.toObject());
     });
-    it("should throw BadRequestException", async () => {
+    it("should throw 400", async () => {
       await expect(service.deleteOne(badId)).rejects.toThrow(BadRequestException);
     });
-    it("should throw throw BadRequestException when user doesn't exist", async () => {
+    it("should throw 403", async () => {
+      const superAdmin = await model.findOne({ username: "superAdmin" }).exec();
+      await expect(service.deleteOne(superAdmin._id)).rejects.toThrow(ForbiddenException);
+    });
+    it("should throw 404", async () => {
       await model.deleteMany({}).exec();
-      await expect(service.deleteOne(old._id)).rejects.toThrow(GoneException);
+      await expect(service.deleteOne(old._id)).rejects.toThrow(NotFoundException);
     });
   });
   describe("validate", () => {
@@ -176,13 +193,13 @@ describe("UserService", () => {
       expect(res.password).not.toBeDefined();
       expect(res.username).toBe(verifyUserDto.username);
     });
-    it("should throw UnauthorizedException when bad password", async () => {
+    it("should throw 401", async () => {
       verifyUserDto.password = "badPassword";
       await expect(service.validate(verifyUserDto)).rejects.toThrow(UnauthorizedException);
     });
-    it("should throw BadRequestException when bad username", async () => {
+    it("should throw 403", async () => {
       verifyUserDto.username = "badUsername";
-      await expect(service.validate(verifyUserDto)).rejects.toThrow(BadRequestException);
+      await expect(service.validate(verifyUserDto)).rejects.toThrow(ForbiddenException);
     });
   });
   describe("login", () => {
@@ -211,12 +228,12 @@ describe("UserService", () => {
       const found = await model.findById(oldObjectId);
       expect(verifyPassword(modifiedPassword, found.password)).toBeTruthy();
     });
-    it("should throw BadRequestException", async () => {
+    it("should throw 400", async () => {
       await expect(service.modifyPassword(badId, modifiedPassword)).rejects.toThrow(BadRequestException);
     });
-    it("should throw GoneException", async () => {
+    it("should throw 404", async () => {
       await model.deleteMany({}).exec();
-      await expect(service.modifyPassword(old._id, modifiedPassword)).rejects.toThrow(GoneException);
+      await expect(service.modifyPassword(old._id, modifiedPassword)).rejects.toThrow(NotFoundException);
     });
   });
   describe("registry", () => {
@@ -236,9 +253,9 @@ describe("UserService", () => {
       const count = await model.countDocuments().exec();
       expect(count).toBe(N + 1);
     });
-    it("should throw BadRequestException", async () => {
+    it("should throw 403", async () => {
       registryUserDto.username = "user";
-      await expect(service.registry(registryUserDto)).rejects.toThrow(BadRequestException);
+      await expect(service.registry(registryUserDto)).rejects.toThrow(ForbiddenException);
     });
   });
 });
