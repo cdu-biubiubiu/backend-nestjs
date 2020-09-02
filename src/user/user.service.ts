@@ -87,8 +87,11 @@ export class UserService {
   }
 
   async login(user: VerifyUserDto) {
+    const u = await this.userModel.findOne({ username: user.username }).exec();
     return {
       username: user.username,
+      role: u.role,
+      _id: u._id,
       access_token: this.jwtService.sign({ username: user.username }),
     };
   }
