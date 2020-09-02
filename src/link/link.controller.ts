@@ -26,7 +26,6 @@ import { JwtAuthGuard } from "../user/auth/jwt-auth.guard";
 import { RolesGuard } from "../roles.guard";
 import { Roles } from "../roles.decorator";
 import { Role } from "../user/dto/create-user.dto";
-import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 
 @ApiTags("link")
 @Controller("link")
@@ -36,7 +35,33 @@ export class LinkController {
   @Get()
   @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: "获取所有友情链接" })
-  @ApiOkResponse({ description: "获取成功" })
+  @ApiOkResponse({
+    description: "获取成功",
+    schema: {
+      example: [
+        {
+          _id: "5f4f627c56e09e507efb92a6",
+          name: "Baidu",
+          src: "www.baidu.com",
+        },
+        {
+          _id: "5f4f627c56e09e507efb92a7",
+          name: "Tencent",
+          src: "www.qq.com",
+        },
+        {
+          _id: "5f4f627c56e09e507efb92a8",
+          name: "Zhihu",
+          src: "www.zhihu.com",
+        },
+        {
+          _id: "5f4f627c56e09e507efb92a9",
+          name: "netflix",
+          src: "www.netflix.com",
+        },
+      ],
+    },
+  })
   async findAll() {
     return this.linkService.findAll();
   }

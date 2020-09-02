@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
@@ -104,13 +104,15 @@ export class UserController {
     schema: {
       example: {
         username: "hanhanhan",
+        role: "superAdmin",
+        _id: "5f4f627dfc695b32813f38e9",
         access_token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhhbmhhbmhhbiIsInJvbGUiOiJzdXBlckFkbWluIiwiX2lkIjoiNWY0ZGYxNzY2MDQzOTUzOGRlZDBlNzJjIiwiaWF0IjoxNTk4OTYwNDk1LCJleHAiOjE1OTg5NjQwOTV9.vUBB9ikJ7KlDnu8UuI4_scjzeqPXaT9VkaoHQ8Neh6w",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhhbmhhbmhhbiIsImlhdCI6MTU5OTAzODA5OCwiZXhwIjoxNTk5MDQxNjk4fQ.NCYdDSVQXatLuHSRPdT2KLJ3BKIQkSd2Zg4k__lOAxY",
       },
     },
   })
-  async login(@Body() user: VerifyUserDto) {
-    return this.userService.login(user);
+  async login(@Request() req) {
+    return this.userService.login(req.user);
   }
 
   @Put(":id")
@@ -212,8 +214,27 @@ export class UserController {
   @Post("registry")
   @ApiTags("registry")
   @ApiOperation({ summary: "普通用户注册" })
-  @ApiBadRequestResponse({ description: "用户已存在" })
-  @ApiCreatedResponse({ description: "注册成功" })
+  @ApiBadRequestResponse({
+    description: "用户已存在",
+    schema: {
+      example: {
+        statusCode: 400,
+        message: "用户已存在",
+        error: "Bad Request",
+      },
+    },
+  })
+  @ApiCreatedResponse({
+    description: "注册成功",
+    schema: {
+      example: {
+        _id: "5f4f6395166bad001bd7be43",
+        username: "hanhan9449",
+        role: "user",
+        __v: 0,
+      },
+    },
+  })
   async registry(@Body() registryUserDto: RegistryUserDto) {
     return this.userService.registry(registryUserDto);
   }

@@ -1,7 +1,7 @@
-import { BadRequestException, GoneException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, GoneException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
-import { Model, mongo, Types } from "mongoose";
+import { Model, mongo } from "mongoose";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { hashPassword, verifyPassword } from "../utils/bcrypt.util";
@@ -86,13 +86,13 @@ export class UserService {
     }
   }
 
-  async login(user: VerifyUserDto) {
+  async login(user: any) {
     const u = await this.userModel.findOne({ username: user.username }).exec();
     return {
       username: user.username,
       role: u.role,
       _id: u._id,
-      access_token: this.jwtService.sign({ username: user.username }),
+      access_token: this.jwtService.sign({ username: user.username, role: user.role }),
     };
   }
 
@@ -104,7 +104,7 @@ export class UserService {
     } catch (e) {
       throw new BadRequestException();
     }
-    const user = await this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
+    const user = await this.userModel.findByIdAndUpdate({ _id: objectId }, { $set: { password } }).exec();
     if (!user) {
       throw new GoneException();
     }
