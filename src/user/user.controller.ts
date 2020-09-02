@@ -8,6 +8,7 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -29,6 +30,33 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: "获取所有用户信息,权限" })
+  @ApiOkResponse({
+    description: "成功",
+    schema: {
+      example: [
+        {
+          _id: "5f4f6db5f072dcf573e9f601",
+          username: "hanhanhan",
+          role: "superAdmin",
+        },
+        {
+          _id: "5f4f6db5f072dcf573e9f602",
+          username: "xiaoming",
+          role: "admin",
+        },
+        {
+          _id: "5f4f6db5f072dcf573e9f603",
+          username: "lihua",
+          role: "user",
+        },
+        {
+          _id: "5f4f6db5f072dcf573e9f604",
+          username: "xiaoyue",
+          role: "user",
+        },
+      ],
+    },
+  })
   async findAll() {
     return await this.userService.findAll();
   }
@@ -46,13 +74,13 @@ export class UserController {
       },
     },
   })
-  @ApiBadRequestResponse({
+  @ApiForbiddenResponse({
     description: "用户已经存在",
     schema: {
       example: {
-        statusCode: 400,
+        statusCode: 403,
         message: "用户已经存在",
-        error: "Bad Request",
+        error: "Forbidden",
       },
     },
   })
@@ -60,8 +88,9 @@ export class UserController {
     description: "创建成功",
     schema: {
       example: {
-        // _id: "5f4e3303515e9e07d2b89a8a",
-        username: "hanhanhan111111",
+        _id: "5f4faa46d573d9745d6e0d09",
+        username: "hanhanhan225",
+        password: "$2b$10$guGf9ltwCgzpelDW.0GA4uTFY7zQ.dzPgKxqxBeCx5Graj2TUKQC2",
         role: "user",
         __v: 0,
       },
@@ -79,13 +108,13 @@ export class UserController {
   })
   @ApiTags("login")
   @ApiOperation({ summary: "用户登录" })
-  @ApiBadRequestResponse({
+  @ApiForbiddenResponse({
     description: "用户不存在",
     schema: {
       example: {
-        statusCode: 400,
+        statusCode: 403,
         message: "用户不存在",
-        error: "Bad Request",
+        error: "Forbidden",
       },
     },
   })
@@ -119,15 +148,18 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SuperAdmin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse({
-    description: "你没有权限进行该操作!",
+  @ApiOperation({ summary: "管理员修改用户信息" })
+  @ApiOkResponse({
+    description: "修改成功",
     schema: {
       example: {
-        statusCode: 401,
-        message: "Unauthorized",
+        _id: "5f4f6db5f072dcf573e9f601",
+        username: "lihuad",
+        password: "$2b$10$RyR/71754FRr7VVZ/n3qFuKWL5mE9SHfALl8zNXOzd0q1Q0Pok1RC",
+        role: "user",
       },
     },
-  })
+  }) // 200
   @ApiBadRequestResponse({
     description: "修改失败,请检查你的id是否有错",
     schema: {
@@ -137,20 +169,37 @@ export class UserController {
         error: "Bad Request",
       },
     },
-  })
-  @ApiOperation({ summary: "管理员修改用户信息" })
-  @ApiOkResponse({
-    description: "修改成功",
+  }) // 400
+  @ApiUnauthorizedResponse({
+    description: "你没有权限进行该操作!",
     schema: {
       example: {
-        n: 1,
-        nModified: 1,
-        ok: 1,
+        statusCode: 401,
+        message: "Unauthorized",
       },
     },
-  })
+  }) // 401
+  @ApiForbiddenResponse({
+    description: "不能修改为超级管理员",
+    schema: {
+      example: {
+        statusCode: 403,
+        message: "不能修改为超级管理员",
+        error: "Forbidden",
+      },
+    },
+  }) // 403
+  @ApiNotFoundResponse({
+    description: "用户不存在",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "用户不存在",
+        error: "Not Found",
+      },
+    },
+  }) // 404
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
-    // TODO: 不能把权限修改为超级管理员
     return this.userService.modifyOne(id, modifyUserDto);
   }
 
@@ -158,15 +207,18 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SuperAdmin, Role.Admin)
   @ApiBearerAuth()
-  @ApiUnauthorizedResponse({
-    description: "你没有权限进行该操作!",
+  @ApiOperation({ summary: "管理员删除一名用户" })
+  @ApiOkResponse({
+    description: "删除成功",
     schema: {
       example: {
-        statusCode: 401,
-        message: "Unauthorized",
+        _id: "5f4f6db5f072dcf573e9f602",
+        username: "xiaoming",
+        password: "$2b$10$4kWj75icEysb857zwQSeXO2MU7JvhsjmB96DA/yTDimWAzh3LdSmO",
+        role: "admin",
       },
     },
-  })
+  }) // 200
   @ApiBadRequestResponse({
     description: "修改失败,请检查你的id是否有错",
     schema: {
@@ -176,10 +228,37 @@ export class UserController {
         error: "Bad Request",
       },
     },
-  })
-  @ApiOperation({ summary: "管理员删除一名用户" })
+  }) // 400
+  @ApiUnauthorizedResponse({
+    description: "你没有权限进行该操作!",
+    schema: {
+      example: {
+        statusCode: 401,
+        message: "Unauthorized",
+      },
+    },
+  }) // 401
+  @ApiForbiddenResponse({
+    description: "不能删除超级管理员",
+    schema: {
+      example: {
+        statusCode: 403,
+        message: "不能删除超级管理员",
+        error: "Forbidden",
+      },
+    },
+  }) // 403
+  @ApiNotFoundResponse({
+    description: "资源不存在",
+    schema: {
+      example: {
+        statusCode: 404,
+        message: "资源不存在",
+        error: "Not Found",
+      },
+    },
+  }) // 404
   async deleteOne(@Param("id") id: string) {
-    // TODO: 超级管理员只被自己管理
     return this.userService.deleteOne(id);
   }
 
@@ -187,6 +266,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, SelfGuard)
   @ApiForbiddenResponse({})
   @ApiBearerAuth()
+  @ApiOperation({ summary: "修改自己密码" })
   @ApiOkResponse({
     description: "修改成功",
     schema: {
@@ -196,7 +276,17 @@ export class UserController {
         role: "user",
       },
     },
-  })
+  }) // 200
+  @ApiBadRequestResponse({
+    description: "id错误",
+    schema: {
+      example: {
+        statusCode: 400,
+        message: "id错误",
+        error: "Bad Request",
+      },
+    },
+  }) // 400
   @ApiUnauthorizedResponse({
     description: "你没有权限进行该操作!",
     schema: {
@@ -205,8 +295,10 @@ export class UserController {
         message: "Unauthorized",
       },
     },
-  })
-  @ApiOperation({ summary: "修改自己密码" })
+  }) // 401
+  @ApiNotFoundResponse({
+    description: "资源未找到",
+  }) // 404
   async modifyPassword(@Param("id") id: string, @Body() modifyPasswordDto: ModifyPasswordDto) {
     return this.userService.modifyPassword(id, modifyPasswordDto.password);
   }
@@ -214,16 +306,6 @@ export class UserController {
   @Post("registry")
   @ApiTags("registry")
   @ApiOperation({ summary: "普通用户注册" })
-  @ApiBadRequestResponse({
-    description: "用户已存在",
-    schema: {
-      example: {
-        statusCode: 400,
-        message: "用户已存在",
-        error: "Bad Request",
-      },
-    },
-  })
   @ApiCreatedResponse({
     description: "注册成功",
     schema: {
@@ -234,7 +316,17 @@ export class UserController {
         __v: 0,
       },
     },
-  })
+  }) // 201
+  @ApiForbiddenResponse({
+    description: "用户名已存在",
+    schema: {
+      example: {
+        statusCode: 403,
+        message: "用户已存在",
+        error: "Forbidden",
+      },
+    },
+  }) // 403
   async registry(@Body() registryUserDto: RegistryUserDto) {
     return this.userService.registry(registryUserDto);
   }
