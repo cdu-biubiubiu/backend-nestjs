@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, GoneException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
 import { Model, mongo, Types } from "mongoose";
@@ -20,15 +20,22 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    return this.userModel.findById(id).exec();
-  }
-
-  async findOneByUsername(username: string): Promise<User> {
-    return this.userModel.findOne({ username }).exec();
+    let objectId;
+    try {
+      objectId = new mongo.ObjectID(id);
+    } catch (e) {
+      throw new BadRequestException();
+    }
+    const user = await this.userModel.findById(objectId).exec();
+    if (!user) {
+      throw new GoneException();
+    }
+    return filterPassword(user);
   }
 
   async createOne(createUserDto: CreateUserDto): Promise<User> {
-    if (await this.findOneByUsername(createUserDto.username)) {
+    const found = await this.userModel.findOne({ username: createUserDto.username }).exec();
+    if (found) {
       throw new BadRequestException("用户已经存在");
     }
     createUserDto.password = await hashPassword(createUserDto.password);
@@ -43,11 +50,12 @@ export class UserService {
     } catch (e) {
       throw new BadRequestException("修改失败,请检查你的id是否有误");
     }
-    if (!(await this.findOne(objectId))) {
-      throw new BadRequestException("用户不存在");
-    }
     modifyUserDto.password = await hashPassword(modifyUserDto.password);
-    return this.userModel.updateOne({ _id: objectId }, { $set: modifyUserDto }).exec();
+    const user = await this.userModel.findByIdAndUpdate(objectId, { $set: modifyUserDto }).exec();
+    if (!user) {
+      throw new GoneException("用户不存在");
+    }
+    return user;
   }
 
   async deleteOne(id: string) {
@@ -57,39 +65,54 @@ export class UserService {
     } catch {
       throw new BadRequestException("请检查你的id是否有误");
     }
-    return this.userModel.deleteOne({ _id: objectId }).exec();
+    const user = await this.userModel.findByIdAndDelete({ _id: objectId }).exec();
+    if (!user) {
+      throw new GoneException("用户已被删除");
+    }
+    return user;
   }
 
   async validate(user: VerifyUserDto) {
     let foundUser: User;
-    foundUser = await this.findOneByUsername(user.username);
+    foundUser = await this.userModel.findOne({ username: user.username }).exec();
     if (!foundUser) {
       throw new BadRequestException("用户不存在");
     }
-    if (foundUser && (await verifyPassword(user.password, foundUser.password))) {
-      const { password, ...result } = foundUser;
-      Logger.debug(result);
+    if (await verifyPassword(user.password, foundUser.password)) {
+      const { password, ...result } = foundUser.toObject();
       return result;
     } else {
       throw new UnauthorizedException("账户或用户名错误");
     }
   }
 
-  async login(user: { username: string; role: Role; _id: string }) {
+  async login(user: VerifyUserDto) {
     return {
       username: user.username,
-      access_token: this.jwtService.sign({ username: user.username, role: user.role, _id: user._id }),
+      access_token: this.jwtService.sign({ username: user.username }),
     };
   }
 
   async modifyPassword(id: string, password: string) {
     password = await hashPassword(password);
-    return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
+    let objectId;
+    try {
+      objectId = new mongo.ObjectID(id);
+    } catch (e) {
+      throw new BadRequestException();
+    }
+    const user = await this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
+    if (!user) {
+      throw new GoneException();
+    }
+    return filterPassword(user);
   }
   async registry(user: RegistryUserDto) {
-    if (await this.findOneByUsername(user.username)) {
+    const found = await this.userModel.findOne({ username: user.username }).exec();
+    if (found) {
       throw new BadRequestException("用户已存在");
     }
+
     user.role = Role.User;
     user.password = await hashPassword(user.password);
     const createdUser = new this.userModel(user);

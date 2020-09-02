@@ -8,7 +8,7 @@ export interface MongoProfile {
   password?: string;
   port?: string | number;
 }
-export const getUri = (p: MongoProfile) => {
+export const getMongoUri = (p: MongoProfile) => {
   let result = "mongodb://";
   result += p.user ? `${p.user}` : "";
   result += p.password ? `:${p.password}` : "";
@@ -21,9 +21,10 @@ export const getUri = (p: MongoProfile) => {
 export class MongooseConfigService implements MongooseOptionsFactory {
   constructor(private configService: ConfigService) {}
   createMongooseOptions(): MongooseModuleOptions {
-    const mongoProfile = this.configService.get<MongoProfile>("mongoProfile");
+    const config = this.configService.get<MongoProfile>("mongoProfile");
     return {
-      uri: getUri(mongoProfile),
+      uri: getMongoUri(config),
+      // TODO: false -> true
       useFindAndModify: false,
       useUnifiedTopology: true,
     };

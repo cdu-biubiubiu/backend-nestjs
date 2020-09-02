@@ -9,11 +9,11 @@ import { CreatePostDto } from "./dto/create-post.dto";
 export class PostService {
   constructor(@InjectModel(Post.name) private postModel: Model<Post>) {}
 
-  async findAll() {
+  async findAll(): Promise<Post[]> {
     return this.postModel.find().exec();
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Post> {
     let objectId;
     try {
       objectId = new mongo.ObjectId(id);
@@ -23,34 +23,31 @@ export class PostService {
     return this.postModel.findById({ _id: objectId }).exec();
   }
 
-  async createOne(createPostDto: CreatePostDto) {
+  async createOne(createPostDto: CreatePostDto): Promise<Post> {
     createPostDto.creationDate = new Date();
     createPostDto.modifiedDate = new Date();
     const createdPost = new this.postModel(createPostDto);
     return createdPost.save();
   }
 
-  async modifyOne(id: string, modifyPostDto: ModifyPostDto) {
+  async modifyOne(id: string, modifyPostDto: ModifyPostDto): Promise<Post> {
     let objectId;
     try {
-      Logger.debug(id);
       objectId = new mongo.ObjectId(id);
     } catch (e) {
-      Logger.debug(e);
-      Logger.debug("arrive");
       throw new BadRequestException("你的id有误");
     }
     modifyPostDto.modifiedDate = new Date();
     return this.postModel.findByIdAndUpdate({ _id: objectId }, { $set: modifyPostDto }).exec();
   }
 
-  async deleteOne(id: string) {
+  async deleteOne(id: string): Promise<Post> {
     let objectId;
     try {
       objectId = new mongo.ObjectId(id);
     } catch (e) {
       throw new BadRequestException("你的id有误");
     }
-    return this.postModel.deleteOne({ _id: objectId }).exec();
+    return this.postModel.findOneAndDelete({ _id: objectId }).exec();
   }
 }

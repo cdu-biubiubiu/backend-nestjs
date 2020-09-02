@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
@@ -109,8 +109,8 @@ export class UserController {
       },
     },
   })
-  async login(@Request() req) {
-    return this.userService.login(req.user._doc);
+  async login(@Body() user: VerifyUserDto) {
+    return this.userService.login(user);
   }
 
   @Put(":id")
