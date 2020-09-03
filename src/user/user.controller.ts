@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Request,
+  UseGuards,
+} from "@nestjs/common";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { UserService } from "./user.service";
@@ -22,6 +34,9 @@ import { Roles } from "../roles.decorator";
 import { SelfGuard } from "../self.guard";
 import { ModifyPasswordDto } from "./dto/modify-password.dto";
 import { RegistryUserDto } from "./dto/registry-user.dto";
+import { verifyAndConvertObjectID } from "../utils/objectID.util";
+import { hasPropertyKey } from "@nestjs/swagger/dist/plugin/utils/plugin-utils";
+import { hashPassword } from "../utils/bcrypt.util";
 
 @ApiTags("user")
 @Controller("user")
@@ -58,7 +73,12 @@ export class UserController {
     },
   }) // 200
   async findAll() {
-    return await this.userService.findAll();
+    const users = await this.userService.findAll();
+    return users.map((user) => ({
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    }));
   }
 
   @Post()
@@ -90,15 +110,19 @@ export class UserController {
       example: {
         _id: "5f4faa46d573d9745d6e0d09",
         username: "hanhanhan225",
-        password: "$2b$10$guGf9ltwCgzpelDW.0GA4uTFY7zQ.dzPgKxqxBeCx5Graj2TUKQC2",
         role: "user",
-        __v: 0,
       },
     },
   }) // 201
   @ApiOperation({ summary: "创建一个用户" })
   async createOne(@Body() createUserDto: CreateUserDto) {
-    return this.userService.createOne(createUserDto);
+    createUserDto.password = await hashPassword(createUserDto.password);
+    const user = await this.userService.createOne(createUserDto);
+    return {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    };
   }
 
   @Post("login")
@@ -141,7 +165,13 @@ export class UserController {
     },
   }) // 201
   async login(@Request() req) {
-    return this.userService.login(req.user);
+    const res = await this.userService.login(req.user);
+    return {
+      username: req.user.username,
+      role: req.user.role,
+      _id: req.user._id,
+      access_token: res.token,
+    };
   }
 
   @Put(":id")
@@ -155,7 +185,6 @@ export class UserController {
       example: {
         _id: "5f4f6db5f072dcf573e9f601",
         username: "lihuad",
-        password: "$2b$10$RyR/71754FRr7VVZ/n3qFuKWL5mE9SHfALl8zNXOzd0q1Q0Pok1RC",
         role: "user",
       },
     },
@@ -200,7 +229,20 @@ export class UserController {
     },
   }) // 404
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
-    return this.userService.modifyOne(id, modifyUserDto);
+    id = verifyAndConvertObjectID(id);
+    if (modifyUserDto.role === Role.SuperAdmin) {
+      throw new ForbiddenException("不能修改为超级管理员");
+    }
+    modifyUserDto.password = await hashPassword(modifyUserDto.password);
+    const user = await this.userService.modifyOne(id, modifyUserDto);
+    if (!user) {
+      throw new NotFoundException("用户不存在");
+    }
+    return {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    };
   }
 
   @Delete(":id")
@@ -214,7 +256,6 @@ export class UserController {
       example: {
         _id: "5f4f6db5f072dcf573e9f602",
         username: "xiaoming",
-        password: "$2b$10$4kWj75icEysb857zwQSeXO2MU7JvhsjmB96DA/yTDimWAzh3LdSmO",
         role: "admin",
       },
     },
@@ -260,7 +301,13 @@ export class UserController {
     },
   }) // 404
   async deleteOne(@Param("id") id: string) {
-    return this.userService.deleteOne(id);
+    id = verifyAndConvertObjectID(id);
+    const user = await this.userService.deleteOne(id);
+    return {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    };
   }
 
   @Put(":id/password")
@@ -301,7 +348,14 @@ export class UserController {
     description: "资源未找到",
   }) // 404
   async modifyPassword(@Param("id") id: string, @Body() modifyPasswordDto: ModifyPasswordDto) {
-    return this.userService.modifyPassword(id, modifyPasswordDto.password);
+    id = verifyAndConvertObjectID(id);
+    const password = await hashPassword(modifyPasswordDto.password);
+    const user = await this.userService.modifyPassword(id, password);
+    return {
+      _id: user._id,
+      username: user.username,
+      password: user.password,
+    };
   }
 
   @Post("registry")
@@ -329,6 +383,13 @@ export class UserController {
     },
   }) // 403
   async registry(@Body() registryUserDto: RegistryUserDto) {
-    return this.userService.registry(registryUserDto);
+    registryUserDto.role = Role.User;
+    registryUserDto.password = await hashPassword(registryUserDto.password);
+    const user = await this.userService.registry(registryUserDto);
+    return {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+    };
   }
 }

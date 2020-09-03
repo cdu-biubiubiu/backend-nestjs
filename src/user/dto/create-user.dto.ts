@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsAlphanumeric, IsEnum, Length } from "class-validator";
+import { IsAlphanumeric, IsEnum, IsNotEmpty, Length } from "class-validator";
+import { DefaultDeserializer } from "v8";
+import { Transform } from "stream";
 
 export enum Role {
   Admin = "admin",
@@ -20,5 +22,6 @@ export class CreateUserDto {
   })
   password: string;
   @IsEnum(Role)
-  role: Role = Role.User;
+  @IsNotEmpty()
+  role: Role;
 }

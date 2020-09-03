@@ -8,4 +8,5 @@ export const verifyAndConvertObjectID = (id: string) => {
   } catch (e) {
     throw new BadRequestException();
   }
+  return objectID;
 };
