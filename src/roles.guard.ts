@@ -19,7 +19,6 @@ export class RolesGuard implements CanActivate {
     if (userRole === Role.SuperAdmin) {
       return true;
     } else if (body.role === Role.SuperAdmin) {
-      console.log(body.role);
       return false;
     }
     return roles.includes(userRole);
