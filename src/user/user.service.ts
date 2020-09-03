@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException, UnauthorizedExceptio
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
 import { Model } from "mongoose";
-import { CreateUserDto, Role } from "./dto/create-user.dto";
+import { CreateUserDto } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { verifyPassword } from "../utils/bcrypt.util";
 import { VerifyUserDto } from "./dto/verify-user.dto";
@@ -40,15 +40,6 @@ export class UserService {
   }
 
   async deleteOne(id) {
-    const found = await this.userModel.findById(id).exec();
-    // TODO
-    if (!found) {
-      throw new NotFoundException("资源不存在");
-    }
-    // TODO
-    if (found.role === Role.SuperAdmin) {
-      throw new ForbiddenException("不能删除超级管理员");
-    }
     return this.userModel.findByIdAndDelete(id).exec();
   }
 
@@ -74,12 +65,7 @@ export class UserService {
   }
 
   async modifyPassword(id: string, password: string) {
-    const user = await this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
-    // TODO
-    if (!user) {
-      throw new NotFoundException();
-    }
-    return user;
+    return this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
   }
 
   async registry(user: RegistryUserDto) {
@@ -88,7 +74,6 @@ export class UserService {
     if (found) {
       throw new ForbiddenException("用户已存在");
     }
-    const createdUser = new this.userModel(user);
-    return await createdUser.save();
+    return new this.userModel(user).save();
   }
 }

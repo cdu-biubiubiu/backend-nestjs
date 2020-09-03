@@ -115,6 +115,10 @@ export class UserController {
     },
   }) // 201
   @ApiOperation({ summary: "创建一个用户" })
+  /**
+   * 超级用户可以创建任用户,非超级用户不能创建超级用户
+   * 通过RolesGuard实现
+   */
   async createOne(@Body() createUserDto: CreateUserDto) {
     createUserDto.password = await hashPassword(createUserDto.password);
     const user = await this.userService.createOne(createUserDto);
@@ -230,9 +234,6 @@ export class UserController {
   }) // 404
   async modifyOne(@Param("id") id: string, @Body() modifyUserDto: ModifyUserDto) {
     id = verifyAndConvertObjectID(id);
-    if (modifyUserDto.role === Role.SuperAdmin) {
-      throw new ForbiddenException("不能修改为超级管理员");
-    }
     modifyUserDto.password = await hashPassword(modifyUserDto.password);
     const user = await this.userService.modifyOne(id, modifyUserDto);
     if (!user) {
@@ -303,6 +304,9 @@ export class UserController {
   async deleteOne(@Param("id") id: string) {
     id = verifyAndConvertObjectID(id);
     const user = await this.userService.deleteOne(id);
+    if (!user) {
+      throw new ForbiddenException("资源不存在");
+    }
     return {
       _id: user._id,
       username: user.username,
@@ -351,10 +355,13 @@ export class UserController {
     id = verifyAndConvertObjectID(id);
     const password = await hashPassword(modifyPasswordDto.password);
     const user = await this.userService.modifyPassword(id, password);
+    if (!user) {
+      throw new NotFoundException("资源不存在");
+    }
     return {
       _id: user._id,
       username: user.username,
-      password: user.password,
+      rule: user.role,
     };
   }
 
