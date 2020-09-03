@@ -6,16 +6,9 @@ import { closeMongeConnection, MockMongodbModule } from "../config/mongodb/mock-
 import { getConnectionToken, MongooseModule } from "@nestjs/mongoose";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { JwtModule } from "@nestjs/jwt";
-import {
-  BadRequestException,
-  ForbiddenException,
-  GoneException,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ForbiddenException, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { VerifyUserDto } from "./dto/verify-user.dto";
-import { filterPassword } from "./user.util";
 import { verifyPassword } from "../utils/bcrypt.util";
 import { RegistryUserDto } from "./dto/registry-user.dto";
 
@@ -27,6 +20,7 @@ describe("UserService", () => {
   let model: Model<User>;
   let old: User;
   let oldObjectId;
+  let olds;
 
   beforeAll(async () => {
     process.env.SALT_ROUND = "10";
@@ -55,7 +49,7 @@ describe("UserService", () => {
   });
   beforeEach(async () => {
     await model.deleteMany({}).exec();
-    const users: CreateUserDto[] = [
+    olds = [
       {
         username: "user",
         password: "$2b$10$th5o/3yhpA3wpTcEOQAu9OBQ.L2ArJYgrM220L/QlHVVWXPxnNFDK",
@@ -72,8 +66,8 @@ describe("UserService", () => {
         role: Role.SuperAdmin,
       },
     ];
-    N = users.length;
-    await model.insertMany(users);
+    N = olds.length;
+    await model.insertMany(olds);
     old = (await model.find().exec())[0];
     oldObjectId = new mongo.ObjectID(old._id);
   });
@@ -86,23 +80,20 @@ describe("UserService", () => {
     expect(service).toBeDefined();
   });
   describe("findAll", () => {
-    it("should return all user without password", async () => {
+    it("should return all user", async () => {
       const users = await service.findAll();
       expect(users.length).toBe(N);
-      expect(users[0].password).not.toBeDefined();
-      expect(users[0].username).toEqual(old.username);
-      expect(users[0].role).toEqual(old.role);
+      expect(users[0].password).toBe(old.password);
+      expect(users[0].username).toBe(old.username);
+      expect(users[0].role).toBe(old.role);
     });
   });
   describe("findOne", () => {
-    it("should return a user without password", async () => {
-      const user = await service.findOne(old._id);
-      expect(user.username).toEqual(old.username);
-      expect(user.password).not.toBeDefined();
-      expect(user.role).toEqual(old.role);
-    });
-    it("should throw 400", async () => {
-      await expect(service.findOne(badId)).rejects.toThrow(BadRequestException);
+    it("should return a user", async () => {
+      const user = await service.findOne(oldObjectId);
+      expect(user.username).toBe(old.username);
+      expect(user.role).toBe(old.role);
+      expect(user.password).toBe(old.password);
     });
     it("should throw 404", async () => {
       await model.deleteMany({}).exec();
@@ -148,17 +139,6 @@ describe("UserService", () => {
       expect(found.password).toEqual(newUser.password);
       expect(found.role).toEqual(newUser.role);
     });
-    it("should throw 400", async () => {
-      await expect(service.modifyOne(badId, newUser)).rejects.toThrow(BadRequestException);
-    });
-    it("should throw 403", async () => {
-      newUser.role = Role.SuperAdmin;
-      await expect(service.modifyOne(old._id, newUser)).rejects.toThrow(ForbiddenException);
-    });
-    it("should throw 404", async () => {
-      await model.deleteMany({}).exec();
-      await expect(service.modifyOne(old._id, newUser)).rejects.toThrow(NotFoundException);
-    });
   });
   describe("deleteOne", () => {
     it("should delete a user", async () => {
@@ -166,9 +146,6 @@ describe("UserService", () => {
       const count = await model.countDocuments().exec();
       expect(count).toBe(N - 1);
       expect(deleted.toObject()).toEqual(old.toObject());
-    });
-    it("should throw 400", async () => {
-      await expect(service.deleteOne(badId)).rejects.toThrow(BadRequestException);
     });
     it("should throw 403", async () => {
       const superAdmin = await model.findOne({ username: "superAdmin" }).exec();
@@ -212,8 +189,7 @@ describe("UserService", () => {
     });
     it("should return token", async () => {
       const res = await service.login(user);
-      expect(res.username).toBeDefined();
-      expect(res.access_token).toBeDefined();
+      expect(res.token).toBeDefined();
     });
   });
   describe("modifySelfPassword", () => {
@@ -224,12 +200,9 @@ describe("UserService", () => {
     it("should modify himself password", async () => {
       const res = await service.modifyPassword(old._id, modifiedPassword);
       expect(res.username).toBe(old.username);
-      expect(res.password).not.toBeDefined();
+      expect(res.password).toBe(old.password);
       const found = await model.findById(oldObjectId);
-      expect(verifyPassword(modifiedPassword, found.password)).toBeTruthy();
-    });
-    it("should throw 400", async () => {
-      await expect(service.modifyPassword(badId, modifiedPassword)).rejects.toThrow(BadRequestException);
+      expect(modifiedPassword).toBe(found.password);
     });
     it("should throw 404", async () => {
       await model.deleteMany({}).exec();
@@ -244,12 +217,11 @@ describe("UserService", () => {
         password: "registry",
       } as RegistryUserDto;
     });
-    it("should return a user without password", async () => {
+    it("should return a user", async () => {
       const user = await service.registry(registryUserDto);
       const id = new mongo.ObjectID(user._id);
-      expect(user.password).not.toBeDefined();
       const found = await model.findById(id).exec();
-      expect(verifyPassword(found.password, registryUserDto.password)).toBeTruthy();
+      expect(found.password).toBe(registryUserDto.password);
       const count = await model.countDocuments().exec();
       expect(count).toBe(N + 1);
     });

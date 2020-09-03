@@ -1,19 +1,12 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "./user.schema";
-import { Model, mongo } from "mongoose";
+import { Model } from "mongoose";
 import { CreateUserDto, Role } from "./dto/create-user.dto";
 import { ModifyUserDto } from "./dto/modify-user.dto";
 import { verifyPassword } from "../utils/bcrypt.util";
 import { VerifyUserDto } from "./dto/verify-user.dto";
 import { JwtService } from "@nestjs/jwt";
-import { filterPassword } from "./user.util";
 import { RegistryUserDto } from "./dto/registry-user.dto";
 
 @Injectable()
@@ -24,18 +17,13 @@ export class UserService {
     return await this.userModel.find().exec();
   }
 
-  async findOne(id: string): Promise<User> {
-    let objectId;
-    try {
-      objectId = new mongo.ObjectID(id);
-    } catch (e) {
-      throw new BadRequestException();
-    }
-    const user = await this.userModel.findById(objectId).exec();
+  async findOne(id): Promise<User> {
+    const user = await this.userModel.findById(id).exec();
+    // TODO
     if (!user) {
       throw new NotFoundException();
     }
-    return filterPassword(user);
+    return user;
   }
 
   async createOne(createUserDto: CreateUserDto): Promise<User> {
@@ -51,11 +39,13 @@ export class UserService {
     return await this.userModel.findByIdAndUpdate(id, { $set: modifyUserDto }).exec();
   }
 
-  async deleteOne(id: string) {
+  async deleteOne(id) {
     const found = await this.userModel.findById(id).exec();
+    // TODO
     if (!found) {
       throw new NotFoundException("资源不存在");
     }
+    // TODO
     if (found.role === Role.SuperAdmin) {
       throw new ForbiddenException("不能删除超级管理员");
     }
@@ -65,6 +55,7 @@ export class UserService {
   async validate(user: VerifyUserDto) {
     let foundUser: User;
     foundUser = await this.userModel.findOne({ username: user.username }).exec();
+    // TODO
     if (!foundUser) {
       throw new ForbiddenException("用户不存在");
     }
@@ -77,7 +68,6 @@ export class UserService {
   }
 
   async login(user: any) {
-    const u = await this.userModel.findOne({ username: user.username }).exec();
     return {
       token: this.jwtService.sign(user),
     };
@@ -85,6 +75,7 @@ export class UserService {
 
   async modifyPassword(id: string, password: string) {
     const user = await this.userModel.findByIdAndUpdate({ _id: id }, { $set: { password } }).exec();
+    // TODO
     if (!user) {
       throw new NotFoundException();
     }
@@ -93,11 +84,11 @@ export class UserService {
 
   async registry(user: RegistryUserDto) {
     const found = await this.userModel.findOne({ username: user.username }).exec();
+    // TODO
     if (found) {
       throw new ForbiddenException("用户已存在");
     }
     const createdUser = new this.userModel(user);
-    const c = await createdUser.save();
-    return c;
+    return await createdUser.save();
   }
 }
