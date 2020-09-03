@@ -29,7 +29,7 @@ async function bootstrap() {
     ignoreGlobalPrefix: true,
   });
   SwaggerModule.setup("api", app, document);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   const port = process.env.APP_PORT || 3000;
   const host = "0.0.0.0";
   await app.listen(port, host);
